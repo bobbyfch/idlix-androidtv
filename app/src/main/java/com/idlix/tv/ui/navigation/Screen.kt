@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
+    object Explore : Screen("explore")
     object Movies : Screen("movies")
     object Series : Screen("series")
     object Search : Screen("search")

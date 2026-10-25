@@ -44,7 +44,7 @@ import com.idlix.tv.ui.theme.NetflixLightGray
 import com.idlix.tv.ui.theme.NetflixRed
 import com.idlix.tv.ui.theme.NetflixWhite
 
-private val CardShape = RoundedCornerShape(8.dp)
+private val CardShape = RoundedCornerShape(14.dp)
 private val BottomScrimBrush = Brush.verticalGradient(
     colors = listOf(Color.Transparent, Color(0xEE141414))
 )

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,8 +56,12 @@ import androidx.tv.material3.Text
 import com.idlix.tv.BuildConfig
 import com.idlix.tv.R
 import com.idlix.tv.data.api.ApiClient
+import com.idlix.tv.data.local.SubtitlePosition
+import com.idlix.tv.data.local.SubtitleSize
+import com.idlix.tv.data.local.TvPreferencesStore
 import com.idlix.tv.data.model.SubdlResponse
 import com.idlix.tv.data.repository.SubdlRepository
+import com.idlix.tv.ui.components.glassSurface
 import com.idlix.tv.ui.theme.NetflixBlack
 import com.idlix.tv.ui.theme.NetflixDarkCard
 import com.idlix.tv.ui.theme.NetflixLightGray
@@ -73,6 +78,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val preferences by TvPreferencesStore.preferences.collectAsState()
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
     val scrollState = rememberScrollState()
@@ -209,13 +215,71 @@ fun SettingsScreen(
             }
         }
 
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .glassSurface(preferences.glassIntensity, RoundedCornerShape(20.dp))
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.settings_appearance),
+                color = NetflixWhite,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            PreferenceChoiceRow(
+                title = stringResource(R.string.glass_intensity),
+                options = listOf(
+                    stringResource(R.string.glass_soft) to "1",
+                    stringResource(R.string.glass_balanced) to "2",
+                    stringResource(R.string.glass_vivid) to "3"
+                ),
+                selected = preferences.glassIntensity.toString(),
+                onSelected = { TvPreferencesStore.setGlassIntensity(context, it.toInt()) }
+            )
+            PreferenceChoiceRow(
+                title = stringResource(R.string.subtitle_position),
+                options = listOf(
+                    stringResource(R.string.subtitle_position_low) to SubtitlePosition.LOW.name,
+                    stringResource(R.string.subtitle_position_standard) to SubtitlePosition.STANDARD.name,
+                    stringResource(R.string.subtitle_position_high) to SubtitlePosition.HIGH.name
+                ),
+                selected = preferences.subtitlePosition.name,
+                onSelected = { selected ->
+                    SubtitlePosition.values().firstOrNull { it.name == selected }?.let {
+                        TvPreferencesStore.setSubtitlePosition(context, it)
+                    }
+                }
+            )
+            PreferenceChoiceRow(
+                title = stringResource(R.string.subtitle_size),
+                options = listOf(
+                    stringResource(R.string.subtitle_size_small) to SubtitleSize.SMALL.name,
+                    stringResource(R.string.subtitle_size_standard) to SubtitleSize.STANDARD.name,
+                    stringResource(R.string.subtitle_size_large) to SubtitleSize.LARGE.name
+                ),
+                selected = preferences.subtitleSize.name,
+                onSelected = { selected ->
+                    SubtitleSize.values().firstOrNull { it.name == selected }?.let {
+                        TvPreferencesStore.setSubtitleSize(context, it)
+                    }
+                }
+            )
+            Text(
+                text = stringResource(R.string.settings_saved_automatically),
+                color = NetflixLightGray,
+                fontSize = 12.sp
+            )
+        }
+
         // ==========================================
         // SECTION 1: BACKEND API CONFIGURATION
         // ==========================================
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(NetflixDarkCard, RoundedCornerShape(10.dp))
+                .glassSurface(preferences.glassIntensity, RoundedCornerShape(18.dp))
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -360,7 +424,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(NetflixDarkCard, RoundedCornerShape(10.dp))
+                .glassSurface(preferences.glassIntensity, RoundedCornerShape(18.dp))
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -570,6 +634,42 @@ fun SettingsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun PreferenceChoiceRow(
+    title: String,
+    options: List<Pair<String, String>>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = title,
+            color = NetflixLightGray,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { (label, value) ->
+                val isSelected = value == selected
+                Button(
+                    onClick = { onSelected(value) },
+                    colors = ButtonDefaults.colors(
+                        containerColor = if (isSelected) Color(0xFF456E9D).copy(alpha = 0.75f) else Color.White.copy(alpha = 0.06f),
+                        contentColor = if (isSelected) NetflixWhite else NetflixLightGray,
+                        focusedContainerColor = Color(0xFF78A8D7),
+                        focusedContentColor = Color(0xFF08111F)
+                    ),
+                    shape = ButtonDefaults.shape(shape = RoundedCornerShape(12.dp)),
+                    modifier = Modifier.height(42.dp)
+                ) {
+                    Text(text = label, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium)
                 }
             }
         }

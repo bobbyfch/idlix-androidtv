@@ -34,6 +34,12 @@ Aplikasi ini **100% mandiri (tanpa perlu backend server terpisah)**. Seluruh log
   * Dilengkapi pencarian dan pengunduhan subtitle alternatif via integrasi SubDL.com langsung dari player.
 * **Pengaturan Fleksibel (In-App Settings)**:
   * URL sumber streaming dapat disesuaikan langsung dari menu Pengaturan di TV menggunakan remote D-pad jika domain IDLIX berganti di masa mendatang.
+* **Kategori & Filter Pencarian**:
+  * Filter jenis konten, anime, drama Korea, Shorts, koleksi, genre, negara, tahun, dan network; opsi metadata muncul mengikuti data yang dikirim katalog.
+  * Urutkan hasil berdasarkan relevansi, popularitas, rating, atau tahun terbaru.
+* **Liquid Glass TV UI & Subtitle Preferences**:
+  * Panel navigasi, pencarian, pengaturan, dan pemilih subtitle memakai permukaan kaca bergradasi dengan fokus D-pad yang jelas.
+  * Atur intensitas panel kaca, posisi subtitle, dan ukuran subtitle. Preferensi tersimpan di perangkat dan langsung diterapkan pada pemutar.
 
 ---
 

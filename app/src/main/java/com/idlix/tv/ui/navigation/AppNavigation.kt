@@ -31,6 +31,7 @@ fun AppNavigation(
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Home.route
 
     val selectedNavItem = when {
+        currentRoute.startsWith("explore") -> NavItem.EXPLORE
         currentRoute.startsWith("search") -> NavItem.SEARCH
         currentRoute.startsWith("continue_watching") -> NavItem.CONTINUE_WATCHING
         currentRoute.startsWith("movies") -> NavItem.MOVIES
@@ -59,6 +60,11 @@ fun AppNavigation(
                     NavItem.HOME -> navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                         launchSingleTop = true
+                    }
+                    NavItem.EXPLORE -> navController.navigate(Screen.Explore.route) {
+                        popUpTo(Screen.Home.route)
+                        launchSingleTop = true
+                        restoreState = true
                     }
                     NavItem.SEARCH -> navController.navigate(Screen.Search.route) {
                         popUpTo(Screen.Home.route)
@@ -153,6 +159,15 @@ private fun androidx.navigation.NavGraphBuilder.setupNavRoutes(
             onNavigateToDetail = { type, slug ->
                 navController.navigate(Screen.Detail.createRoute(type, slug))
             }
+        )
+    }
+
+    composable(Screen.Explore.route) {
+        SearchScreen(
+            onNavigateToDetail = { type, slug ->
+                navController.navigate(Screen.Detail.createRoute(type, slug))
+            },
+            initialFilterPanelVisible = true
         )
     }
 

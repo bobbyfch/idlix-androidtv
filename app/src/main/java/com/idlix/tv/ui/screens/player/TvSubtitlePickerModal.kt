@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,9 +47,11 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.idlix.tv.R
+import com.idlix.tv.data.local.TvPreferencesStore
 import com.idlix.tv.data.model.SubdlSubtitle
 import com.idlix.tv.data.model.SubtitleTrack
 import com.idlix.tv.ui.components.TvLoadingSpinner
+import com.idlix.tv.ui.components.glassSurface
 import com.idlix.tv.ui.theme.NetflixDarkCard
 import com.idlix.tv.ui.theme.NetflixLightGray
 import com.idlix.tv.ui.theme.NetflixRed
@@ -71,6 +74,8 @@ fun TvSubtitlePickerModal(
 ) {
     if (!isVisible) return
 
+    val preferences by TvPreferencesStore.preferences.collectAsState()
+
     val firstItemFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(isVisible) {
@@ -84,7 +89,7 @@ fun TvSubtitlePickerModal(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xB3000000))
+            .background(Color(0xC9081424))
             .clickable(onClick = onDismiss),
         contentAlignment = Alignment.CenterEnd
     ) {
@@ -93,8 +98,11 @@ fun TvSubtitlePickerModal(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(420.dp)
-                .background(Color(0xF0181818))
                 .clickable(enabled = false) {}
+                .glassSurface(
+                    preferences.glassIntensity,
+                    RoundedCornerShape(topStart = 26.dp, bottomStart = 26.dp)
+                )
                 .padding(24.dp)
         ) {
             // Header

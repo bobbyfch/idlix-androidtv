@@ -1,8 +1,10 @@
 package com.idlix.tv.ui.components
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Movie
@@ -24,6 +27,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -49,14 +54,14 @@ import androidx.tv.material3.Glow
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.idlix.tv.R
+import com.idlix.tv.data.local.TvPreferencesStore
 import com.idlix.tv.ui.theme.NetflixBlack
-import com.idlix.tv.ui.theme.NetflixDarkCard
 import com.idlix.tv.ui.theme.NetflixLightGray
-import com.idlix.tv.ui.theme.NetflixRed
 import com.idlix.tv.ui.theme.NetflixWhite
 
 enum class NavItem(val labelRes: Int, val icon: ImageVector) {
     HOME(R.string.home, Icons.Default.Home),
+    EXPLORE(R.string.explore, Icons.Default.Explore),
     SEARCH(R.string.search, Icons.Default.Search),
     CONTINUE_WATCHING(R.string.continue_watching, Icons.Default.History),
     MOVIES(R.string.movies, Icons.Default.Movie),
@@ -73,6 +78,8 @@ fun TvNavDrawer(
     content: @Composable () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    val preferences by TvPreferencesStore.preferences.collectAsState()
+    val glassAlpha = 0.70f + preferences.glassIntensity * 0.08f
     val homeFocusRequester = remember { FocusRequester() }
     val drawerWidth by animateDpAsState(
         targetValue = if (isExpanded) 210.dp else 64.dp,
@@ -111,7 +118,22 @@ fun TvNavDrawer(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(drawerWidth)
-                .background(NetflixBlack.copy(alpha = if (isExpanded) 0.98f else 0.92f))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            Color(0xFF111B2A).copy(alpha = (glassAlpha + 0.06f).coerceAtMost(0.96f)),
+                            Color(0xFF1D2A3C).copy(alpha = if (isExpanded) glassAlpha else (glassAlpha - 0.06f))
+                        )
+                    ),
+                    RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+                )
+                .border(
+                    BorderStroke(
+                        1.dp,
+                        Color.White.copy(alpha = 0.10f + preferences.glassIntensity * 0.025f)
+                    ),
+                    RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+                )
                 .padding(vertical = 24.dp, horizontal = 10.dp)
                 .onFocusChanged { isExpanded = it.hasFocus },
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -150,8 +172,8 @@ fun TvNavDrawer(
                     glow = CardDefaults.glow(focusedGlow = Glow.None),
                     shape = CardDefaults.shape(shape = RoundedCornerShape(8.dp)),
                     colors = CardDefaults.colors(
-                        containerColor = if (itemFocused) NetflixDarkCard else Color.Transparent,
-                        focusedContainerColor = NetflixRed
+                        containerColor = if (itemFocused) Color.White.copy(alpha = 0.11f) else Color.Transparent,
+                        focusedContainerColor = Color(0xFF4D83C2).copy(alpha = 0.92f)
                     )
                 ) {
                     Row(

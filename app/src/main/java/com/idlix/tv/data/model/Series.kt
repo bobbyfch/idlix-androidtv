@@ -1,6 +1,12 @@
 package com.idlix.tv.data.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 
 @Serializable
 data class SeriesListResponse(
@@ -159,7 +165,13 @@ data class SearchResultItem(
     val quality: String? = null,
     val slug: String = "",
     val numberOfSeasons: Int? = null,
-    val commentCount: Int? = null
+    val commentCount: Int? = null,
+    val country: JsonElement? = null,
+    val network: JsonElement? = null,
+    val networks: JsonElement? = null,
+    val collection: JsonElement? = null,
+    val collections: JsonElement? = null,
+    val runtime: JsonElement? = null
 ) {
     val fullPosterUrl: String
         get() = if (posterPath != null) "https://image.tmdb.org/t/p/w342$posterPath" else ""
@@ -169,4 +181,34 @@ data class SearchResultItem(
 
     val formattedRating: String
         get() = voteAverage?.toDoubleOrNull()?.let { String.format("%.1f", it) } ?: (voteAverage ?: "N/A")
+
+    val countryLabel: String? get() = country.toDisplayLabel()
+    val networkLabel: String? get() = network.toDisplayLabel() ?: networks.toDisplayLabel()
+    val collectionLabel: String? get() = collection.toDisplayLabel() ?: collections.toDisplayLabel()
+    val releaseYear: String? get() = (releaseDate ?: firstAirDate)?.take(4)?.takeIf { it.length == 4 }
+    val runtimeMinutes: Int? get() = runtime.toRuntimeMinutes()
+    val isAnime: Boolean
+        get() = originalLanguage.equals("ja", ignoreCase = true) ||
+            genres.any { it.contains("animation", ignoreCase = true) || it.contains("anime", ignoreCase = true) }
+    val isKoreanDrama: Boolean
+        get() = originalLanguage.equals("ko", ignoreCase = true) ||
+            countryLabel.orEmpty().contains("korea", ignoreCase = true)
+    val isShort: Boolean
+        get() = (runtimeMinutes != null && runtimeMinutes <= 50) ||
+            genres.any { it.contains("short", ignoreCase = true) }
+}
+
+private fun JsonElement?.toDisplayLabel(): String? = when (this) {
+    is JsonPrimitive -> contentOrNull?.takeIf { it.isNotBlank() && it != "null" }
+    is JsonObject -> listOf("name", "title", "label", "original_name")
+        .firstNotNullOfOrNull { (this[it] as? JsonPrimitive)?.contentOrNull?.takeIf(String::isNotBlank) }
+    is JsonArray -> mapNotNull { it.toDisplayLabel() }.distinct().joinToString(", ").takeIf(String::isNotBlank)
+    else -> null
+}
+
+private fun JsonElement?.toRuntimeMinutes(): Int? {
+    val primitive = this as? JsonPrimitive ?: return null
+    return primitive.intOrNull ?: primitive.contentOrNull
+        ?.substringBefore(" ")
+        ?.toIntOrNull()
 }

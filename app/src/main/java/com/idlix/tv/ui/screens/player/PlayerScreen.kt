@@ -60,6 +60,7 @@ import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Text
 import com.idlix.tv.R
+import com.idlix.tv.data.local.TvPreferencesStore
 import com.idlix.tv.ui.components.TvLoadingSpinner
 import com.idlix.tv.ui.theme.NetflixBlack
 import com.idlix.tv.ui.theme.NetflixLightGray
@@ -135,6 +136,7 @@ fun PlayerScreen(
     viewModel: PlayerViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val tvPreferences by TvPreferencesStore.preferences.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
 
@@ -522,8 +524,15 @@ fun PlayerScreen(
                         subtitleView?.apply {
                             setUserDefaultStyle()
                             setUserDefaultTextSize()
-                            setFractionalTextSize(0.053f) // Standard Netflix TV subtitle proportion
+                            setFractionalTextSize(0.053f * tvPreferences.subtitleSize.scale)
+                            setBottomPaddingFraction(tvPreferences.subtitlePosition.bottomPaddingFraction)
                         }
+                    }
+                },
+                update = { playerView ->
+                    playerView.subtitleView?.apply {
+                        setFractionalTextSize(0.053f * tvPreferences.subtitleSize.scale)
+                        setBottomPaddingFraction(tvPreferences.subtitlePosition.bottomPaddingFraction)
                     }
                 },
                 modifier = Modifier.fillMaxSize()
